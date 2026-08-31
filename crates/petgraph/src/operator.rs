@@ -3,7 +3,10 @@ use super::{
     EdgeType,
     graph::{Graph, IndexType},
 };
-use crate::visit::IntoNodeReferences;
+use crate::{
+    graph::NodeIndex,
+    visit::{EdgeRef, IntoNodeReferences},
+};
 
 /// \[Generic\] complement of the graph
 ///
@@ -74,6 +77,70 @@ pub fn complement<N, E, Ty, Ix>(
             if x != y && !input.contains_edge(x, y) {
                 output.add_edge(x, y, weight.clone());
             }
+        }
+    }
+}
+
+/// Union of two graphs
+///
+/// Computes the (disjoint) union of the two input graphs
+/// and stores it in the (empty) output graph
+pub fn union<N, E, Ty, Ix>(
+    g1: &Graph<N, E, Ty, Ix>,
+    g2: &Graph<N, E, Ty, Ix>,
+    output: &mut Graph<N, E, Ty, Ix>,
+) where
+    Ty: EdgeType,
+    Ix: IndexType,
+    E: Clone,
+    N: Clone,
+{
+    for (_node, weight) in g1.node_references() {
+        output.add_node(weight.clone());
+    }
+    for (_node, weight) in g2.node_references() {
+        output.add_node(weight.clone());
+    }
+    for edge in g1.edge_references() {
+        output.add_edge(edge.source(), edge.target(), edge.weight().clone());
+    }
+    let offset = g1.node_count();
+    for edge in g2.edge_references() {
+        output.add_edge(
+            NodeIndex::new(edge.source().index() + offset),
+            NodeIndex::new(edge.target().index() + offset),
+            edge.weight().clone(),
+        );
+    }
+}
+
+/// Graph join
+///
+/// Computes the join of the two input graphs
+/// and stores it in the (empty) output graph
+///
+/// Adds edges from all nodes from g1 to all nodes from g2
+/// Graph join for directed graphs is uni-directional
+///
+/// The `weights` function should specify how the new edges should be given a weight
+/// E.g., if you have no edge weights (E = ()) then you can provide `|_,_| ()`
+pub fn join<N, E, Ty, Ix, F>(
+    g1: &Graph<N, E, Ty, Ix>,
+    g2: &Graph<N, E, Ty, Ix>,
+    output: &mut Graph<N, E, Ty, Ix>,
+    weights: F,
+) where
+    Ty: EdgeType,
+    Ix: IndexType,
+    E: Clone,
+    N: Clone,
+    F: Fn(NodeIndex<Ix>, NodeIndex<Ix>) -> E,
+{
+    union(g1, g2, output);
+    let offset = g1.node_count();
+    for n1 in g1.node_indices() {
+        for n2 in g2.node_indices() {
+            output.add_edge(n1, NodeIndex::new(n2.index() + offset), weights(n1, n2));
         }
     }
 }

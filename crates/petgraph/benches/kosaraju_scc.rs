@@ -7,7 +7,7 @@ use petgraph::{
     prelude::{Graph, NodeIndex},
 };
 use rand::{Rng, SeedableRng, StdRng};
-use test::Bencher;
+use test::{Bencher, black_box};
 
 #[bench]
 fn kosaraju_scc_bench(bench: &mut Bencher) {
@@ -18,7 +18,23 @@ fn kosaraju_scc_bench(bench: &mut Bencher) {
         g.add_edge(nodes[i], nodes[i + 1], ());
     }
     bench.iter(|| {
-        let _sccs = kosaraju_scc(&g);
+        // using black_box tells the compiler not to optimize the argument
+        let _sccs = kosaraju_scc(black_box(&g));
+    });
+}
+
+#[bench]
+fn kosaraju_scc_bench_self_loops(bench: &mut Bencher) {
+    static NODE_COUNT: usize = 100_000;
+    let mut g: Graph<usize, ()> = Graph::new();
+    let nodes: Vec<NodeIndex<_>> = (0..NODE_COUNT).map(|i| g.add_node(i)).collect();
+    for i in 0..NODE_COUNT - 1 {
+        g.add_edge(nodes[i], nodes[i + 1], ());
+        g.add_edge(nodes[i], nodes[i], ());
+    }
+    bench.iter(|| {
+        // using black_box tells the compiler not to optimize the argument
+        let _sccs = kosaraju_scc(black_box(&g));
     });
 }
 

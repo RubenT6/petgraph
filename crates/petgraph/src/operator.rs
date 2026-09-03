@@ -85,6 +85,9 @@ pub fn complement<N, E, Ty, Ix>(
 ///
 /// Computes the (disjoint) union of the two input graphs
 /// and stores it in the (empty) output graph
+///
+/// Computes in **O(|V1| + |V2| + |E1| + |E2|)**
+/// where VX is the set of vertices of gX, and similarly for EX
 pub fn union<N, E, Ty, Ix>(
     g1: &Graph<N, E, Ty, Ix>,
     g2: &Graph<N, E, Ty, Ix>,
@@ -120,10 +123,12 @@ pub fn union<N, E, Ty, Ix>(
 /// and stores it in the (empty) output graph
 ///
 /// Adds edges from all nodes from g1 to all nodes from g2
-/// Graph join for directed graphs is uni-directional
+/// Graph join for directed graphs is thus uni-directional
 ///
-/// The `weights` function should specify how the new edges should be given a weight
+/// The `weights` function should specify how to give new edges a weight
 /// E.g., if you have no edge weights (E = ()) then you can provide `|_,_| ()`
+///
+/// Computes in **O(|V1| * |V2| + |E1| + |E2|)**
 pub fn join<N, E, Ty, Ix, F>(
     g1: &Graph<N, E, Ty, Ix>,
     g2: &Graph<N, E, Ty, Ix>,

@@ -5,7 +5,11 @@ use super::{
     EdgeType,
     graph::{Graph, IndexType},
 };
-use crate::{graph::NodeIndex, visit::IntoNodeReferences};
+use crate::{
+    Directed,
+    graph::{DefaultIx, NodeIndex},
+    visit::IntoNodeReferences,
+};
 
 /// \[Generic\] complement of the graph
 ///
@@ -80,6 +84,8 @@ pub fn complement<N, E, Ty, Ix>(
     }
 }
 
+/// =============== Graph Products ================================
+
 pub trait ProductRule {
     fn has_edge(a1_e_b1: bool, a2_e_b2: bool, a1_eq_b1: bool, a2_eq_b2: bool) -> bool;
 }
@@ -144,6 +150,28 @@ impl ProductRule for Tensor {
 impl<N: Clone + Mul<Output = N>, E: Clone + Mul<Output = E>> WeightRule<N, E> for Tensor {
     fn edge_weight(w1: Option<E>, w2: Option<E>) -> E {
         w1.unwrap() * w2.unwrap()
+    }
+
+    fn node_weight(w1: N, w2: N) -> N {
+        w1 * w2
+    }
+}
+
+pub struct Strong;
+
+impl ProductRule for Strong {
+    fn has_edge(a1_e_b1: bool, a2_e_b2: bool, a1_eq_b1: bool, a2_eq_b2: bool) -> bool {
+        (a1_eq_b1 && a2_e_b2) || (a1_e_b1 && a2_eq_b2) || (a1_e_b1 && a2_e_b2)
+    }
+}
+
+impl<N: Clone + Mul<Output = N>, E: Clone + Mul<Output = E>> WeightRule<N, E> for Strong {
+    fn edge_weight(w1: Option<E>, w2: Option<E>) -> E {
+        if let Some(rw1) = w1 {
+            if let Some(rw2) = w2 { rw1 * rw2 } else { rw1 }
+        } else {
+            w2.unwrap()
+        }
     }
 
     fn node_weight(w1: N, w2: N) -> N {
@@ -244,6 +272,19 @@ pub fn tensor_product<N, E, Ty, Ix>(
     N: Clone + Mul<Output = N>,
 {
     compute_graph_product::<N, E, Ty, Ix, Tensor>(g1, g2, output);
+}
+
+pub fn strong_product<N, E, Ty, Ix>(
+    g1: &Graph<N, E, Ty, Ix>,
+    g2: &Graph<N, E, Ty, Ix>,
+    output: &mut Graph<N, E, Ty, Ix>,
+) where
+    Ty: EdgeType,
+    Ix: IndexType,
+    E: Clone + Mul<Output = E>,
+    N: Clone + Mul<Output = N>,
+{
+    compute_graph_product::<N, E, Ty, Ix, Strong>(g1, g2, output);
 }
 
 // pub fn cartesian_product<N, E, Ty, Ix>(

@@ -86,6 +86,9 @@ pub fn complement<N, E, Ty, Ix>(
 /// Computes the (disjoint) union of the two input graphs
 /// and stores it in the (empty) output graph
 ///
+/// **Panics** if the number of nodes or edges does not fit with
+/// the given output graph's index type.
+///
 /// Computes in **O(|V1| + |V2| + |E1| + |E2|)**
 /// where VX is the set of vertices of gX, and similarly for EX
 pub fn union<N, E, Ty, Ix>(
@@ -98,14 +101,9 @@ pub fn union<N, E, Ty, Ix>(
     E: Clone,
     N: Clone,
 {
-    for (_node, weight) in g1.node_references() {
-        output.add_node(weight.clone());
-    }
+    *output = g1.clone();
     for (_node, weight) in g2.node_references() {
         output.add_node(weight.clone());
-    }
-    for edge in g1.edge_references() {
-        output.add_edge(edge.source(), edge.target(), edge.weight().clone());
     }
     let offset = g1.node_count();
     for edge in g2.edge_references() {
@@ -127,6 +125,9 @@ pub fn union<N, E, Ty, Ix>(
 ///
 /// The `weights` function should specify how to give new edges a weight
 /// E.g., if you have no edge weights (E = ()) then you can provide `|_,_| ()`
+///
+/// **Panics** if the number of nodes or edges does not fit with
+/// the given output graph's index type.
 ///
 /// Computes in **O(|V1| * |V2| + |E1| + |E2|)**
 pub fn join<N, E, Ty, Ix, F>(

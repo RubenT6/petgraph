@@ -47,7 +47,7 @@ fn tarjan_scc_bench_two_way_chain(bench: &mut Bencher) {
         g.add_edge(nodes[i + 1], nodes[i], ());
     }
     bench.iter(|| {
-        let _sccs = tarjan_scc(&g);
+        let _sccs = tarjan_scc(black_box(&g));
     });
 }
 
@@ -61,7 +61,7 @@ fn tarjan_scc_bench_big_loop(bench: &mut Bencher) {
     }
     g.add_edge(nodes[NODE_COUNT - 1], nodes[0], ());
     bench.iter(|| {
-        let _sccs = tarjan_scc(&g);
+        let _sccs = tarjan_scc(black_box(&g));
     });
 }
 
@@ -76,7 +76,7 @@ fn tarjan_scc_bench_many_edges(bench: &mut Bencher) {
         }
     }
     bench.iter(|| {
-        let _sccs = tarjan_scc(&g);
+        let _sccs = tarjan_scc(black_box(&g));
     });
 }
 
@@ -102,7 +102,7 @@ fn tarjan_scc_bench_chain_sccs(bench: &mut Bencher) {
     //     g.add_edge(nodes[i * CLIQUE_SIZE], nodes[(i + 1) * CLIQUE_SIZE], ());
     // }
     bench.iter(|| {
-        let _sscs = tarjan_scc(&g);
+        let _sscs = tarjan_scc(black_box(&g));
     })
 }
 
@@ -124,7 +124,7 @@ fn tarjan_scc_bench_disjoint_sccs(bench: &mut Bencher) {
         }
     }
     bench.iter(|| {
-        let _sscs = tarjan_scc(&g);
+        let _sscs = tarjan_scc(black_box(&g));
     })
 }
 
@@ -144,6 +144,6 @@ fn tarjan_scc_bench_random(bench: &mut Bencher) {
         g.add_edge(nodes[source], nodes[target], ());
     }
     bench.iter(|| {
-        let _sccs = tarjan_scc(&g);
+        let _sccs = tarjan_scc(black_box(&g));
     })
 }

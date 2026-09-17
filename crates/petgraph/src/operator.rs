@@ -1,11 +1,14 @@
 //! Operators for creating new graphs from existing ones.
+use std::collections::HashMap;
+
 use super::{
     EdgeType,
     graph::{Graph, IndexType},
 };
 use crate::{
+    data::Build,
     graph::NodeIndex,
-    visit::{EdgeRef, IntoNodeReferences},
+    visit::{Data, EdgeRef, IntoEdgeReferences, IntoNodeReferences, NodeRef},
 };
 
 /// \[Generic\] complement of the graph
@@ -91,25 +94,50 @@ pub fn complement<N, E, Ty, Ix>(
 ///
 /// Computes in **O(|V1| + |V2| + |E1| + |E2|)**
 /// where VX is the set of vertices of gX, and similarly for EX
-pub fn union<N, E, Ty, Ix>(
-    g1: &Graph<N, E, Ty, Ix>,
-    g2: &Graph<N, E, Ty, Ix>,
-    output: &mut Graph<N, E, Ty, Ix>,
-) where
-    Ty: EdgeType,
-    Ix: IndexType,
-    E: Clone,
-    N: Clone,
+// pub fn union<N, E, Ty, Ix>(
+//     g1: &Graph<N, E, Ty, Ix>,
+//     g2: &Graph<N, E, Ty, Ix>,
+//     output: &mut Graph<N, E, Ty, Ix>,
+// ) where
+//     Ty: EdgeType,
+//     Ix: IndexType,
+//     E: Clone,
+//     N: Clone,
+// {
+//     *output = g1.clone();
+//     for (_node, weight) in g2.node_references() {
+//         output.add_node(weight.clone());
+//     }
+//     let offset = g1.node_count();
+//     for edge in g2.edge_references() {
+//         output.add_edge(
+//             NodeIndex::new(edge.source().index() + offset),
+//             NodeIndex::new(edge.target().index() + offset),
+//             edge.weight().clone(),
+//         );
+//     }
+// }
+pub fn union<G>(g1: &G, g2: &G, output: &mut G)
+where
+    G: Build + Clone + Data,
+    for<'a> &'a G: IntoNodeReferences + IntoEdgeReferences,
+    for<'a> <&'a G as IntoNodeReferences>::NodeRef:
+        NodeRef<Weight = G::NodeWeight, NodeId = G::NodeId>,
+    for<'a> <&'a G as IntoEdgeReferences>::EdgeRef:
+        EdgeRef<Weight = G::EdgeWeight, NodeId = G::NodeId>,
+    G::NodeWeight: Clone,
+    G::EdgeWeight: Clone,
+    G::NodeId: Eq + core::hash::Hash,
 {
     *output = g1.clone();
-    for (_node, weight) in g2.node_references() {
-        output.add_node(weight.clone());
-    }
-    let offset = g1.node_count();
+    let g2_nodes_map: HashMap<G::NodeId, G::NodeId> = g2
+        .node_references()
+        .map(|n| (n.id(), output.add_node((*n.weight()).clone())))
+        .collect();
     for edge in g2.edge_references() {
         output.add_edge(
-            NodeIndex::new(edge.source().index() + offset),
-            NodeIndex::new(edge.target().index() + offset),
+            g2_nodes_map[&edge.source()],
+            g2_nodes_map[&edge.target()],
             edge.weight().clone(),
         );
     }
@@ -130,23 +158,34 @@ pub fn union<N, E, Ty, Ix>(
 /// the given output graph's index type.
 ///
 /// Computes in **O(|V1| * |V2| + |E1| + |E2|)**
-pub fn join<N, E, Ty, Ix, F>(
-    g1: &Graph<N, E, Ty, Ix>,
-    g2: &Graph<N, E, Ty, Ix>,
-    output: &mut Graph<N, E, Ty, Ix>,
-    weights: F,
-) where
-    Ty: EdgeType,
-    Ix: IndexType,
-    E: Clone,
-    N: Clone,
-    F: Fn(NodeIndex<Ix>, NodeIndex<Ix>) -> E,
+pub fn join<G, F>(g1: &G, g2: &G, output: &mut G, weights: F)
+where
+    G: Build + Clone + Data,
+    for<'a> &'a G: IntoNodeReferences + IntoEdgeReferences,
+    for<'a> <&'a G as IntoNodeReferences>::NodeRef:
+        NodeRef<Weight = G::NodeWeight, NodeId = G::NodeId>,
+    for<'a> <&'a G as IntoEdgeReferences>::EdgeRef:
+        EdgeRef<Weight = G::EdgeWeight, NodeId = G::NodeId>,
+    G::NodeWeight: Clone,
+    G::EdgeWeight: Clone,
+    G::NodeId: Eq + core::hash::Hash,
+    F: Fn(G::NodeId, G::NodeId) -> G::EdgeWeight,
 {
-    union(g1, g2, output);
-    let offset = g1.node_count();
-    for n1 in g1.node_indices() {
-        for n2 in g2.node_indices() {
-            output.add_edge(n1, NodeIndex::new(n2.index() + offset), weights(n1, n2));
+    *output = g1.clone();
+    let g2_nodes_map: HashMap<G::NodeId, G::NodeId> = g2
+        .node_references()
+        .map(|n| (n.id(), output.add_node((*n.weight()).clone())))
+        .collect();
+    for edge in g2.edge_references() {
+        output.add_edge(
+            g2_nodes_map[&edge.source()],
+            g2_nodes_map[&edge.target()],
+            edge.weight().clone(),
+        );
+    }
+    for n1 in g1.node_references() {
+        for n2 in g2.node_references() {
+            output.add_edge(n1.id(), g2_nodes_map[&n2.id()], weights(n1.id(), n2.id()));
         }
     }
 }

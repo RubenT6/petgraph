@@ -7,7 +7,6 @@ use super::{
 };
 use crate::{
     data::Build,
-    graph::NodeIndex,
     visit::{Data, EdgeRef, IntoEdgeReferences, IntoNodeReferences, NodeRef},
 };
 

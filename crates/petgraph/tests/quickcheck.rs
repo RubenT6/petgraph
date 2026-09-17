@@ -39,7 +39,7 @@ use petgraph::{
     dot::{Config, Dot},
     graph::{IndexType, edge_index, node_index},
     graphmap::NodeTrait,
-    operator::complement,
+    operator::{complement, join, union},
     prelude::*,
     visit::{
         EdgeFiltered, EdgeIndexable, IntoEdgeReferences, IntoEdges, IntoNeighbors,
@@ -984,6 +984,24 @@ quickcheck! {
             }
         }
         true
+    }
+}
+
+quickcheck! {
+    fn union_with_empty(g: Graph<u32, u32>, _node: usize) -> bool {
+        let empty: Graph<u32, u32> = Graph::new();
+        let mut output: Graph<u32, u32> = Graph::new();
+        union(&g, &empty, &mut output);
+        is_isomorphic_matching(&g, &output, PartialEq::eq, PartialEq::eq)
+    }
+}
+
+quickcheck! {
+    fn join_with_empty(g: Graph<u32, u32>, _node: usize) -> bool {
+        let empty: Graph<u32, u32> = Graph::new();
+        let mut output: Graph<u32, u32> = Graph::new();
+        join(&g, &empty, &mut output, |_n1, _n2| 0);
+        is_isomorphic_matching(&g, &output, PartialEq::eq, PartialEq::eq)
     }
 }
 

@@ -131,8 +131,8 @@ fn kosaraju_scc_bench_disjoint_sccs(bench: &mut Bencher) {
 
 #[bench]
 fn kosaraju_scc_bench_random(bench: &mut Bencher) {
-    static NODE_COUNT: usize = 10_000;
-    static EDGE_COUNT: usize = 100;
+    static NODE_COUNT: usize = 1000;
+    static EDGE_COUNT: usize = 100_000;
     let mut g: Graph<usize, ()> = Graph::new();
     let nodes: Vec<NodeIndex<_>> = (0..NODE_COUNT).map(|i| g.add_node(i)).collect();
     // match seeds for kosaraju_scc and tarjan_scc to compare

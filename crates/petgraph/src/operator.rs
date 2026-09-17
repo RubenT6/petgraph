@@ -93,29 +93,6 @@ pub fn complement<N, E, Ty, Ix>(
 ///
 /// Computes in **O(|V1| + |V2| + |E1| + |E2|)**
 /// where VX is the set of vertices of gX, and similarly for EX
-// pub fn union<N, E, Ty, Ix>(
-//     g1: &Graph<N, E, Ty, Ix>,
-//     g2: &Graph<N, E, Ty, Ix>,
-//     output: &mut Graph<N, E, Ty, Ix>,
-// ) where
-//     Ty: EdgeType,
-//     Ix: IndexType,
-//     E: Clone,
-//     N: Clone,
-// {
-//     *output = g1.clone();
-//     for (_node, weight) in g2.node_references() {
-//         output.add_node(weight.clone());
-//     }
-//     let offset = g1.node_count();
-//     for edge in g2.edge_references() {
-//         output.add_edge(
-//             NodeIndex::new(edge.source().index() + offset),
-//             NodeIndex::new(edge.target().index() + offset),
-//             edge.weight().clone(),
-//         );
-//     }
-// }
 pub fn union<G>(g1: &G, g2: &G, output: &mut G)
 where
     G: Build + Clone + Data,

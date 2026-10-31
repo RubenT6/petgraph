@@ -49,6 +49,7 @@ impl Display for DirEdgeId {
 
 impl Id for DirEdgeId {}
 
+#[derive(Debug)]
 pub struct DirectedTestGraph<N, E, NI = DirNodeId, EI = DirEdgeId> {
     next_node: NI,
     next_edge: EI,
@@ -291,13 +292,15 @@ impl<N, E> EditableGraph for DirectedTestGraph<N, E, DirNodeId, DirEdgeId> {
 
 #[cfg(test)]
 mod tests {
+    use proptest::prelude::*;
+
     use super::*;
     use crate::{
         test_directed_editable_graph, test_directed_editable_graph_parallel_edges,
         test_directed_editable_graph_self_loops, test_directed_graph,
         test_directed_graph_parallel_edges, test_directed_graph_self_loops,
         test_directed_storable_graph, test_directed_storable_graph_parallel_edges,
-        test_directed_storable_graph_self_loops,
+        test_directed_storable_graph_self_loops, utils::testing::directed::graph_strategy,
     };
 
     test_directed_graph!(DirectedTestGraph::<(), (), DirNodeId, DirEdgeId>::new,);
@@ -319,4 +322,13 @@ mod tests {
     test_directed_storable_graph_parallel_edges!(
         DirectedTestGraph::<(), (), DirNodeId, DirEdgeId>::new,
     );
+
+    proptest! {
+        #[test]
+        fn test_graph_properties(graph in graph_strategy::<DirectedTestGraph<i32,i32>, i32, i32>(10, 100, DirectedTestGraph::new)) {
+            prop_assert_eq!(graph.node_count(), graph.nodes().count());
+            prop_assert!(graph.node_count() <= 10);
+            prop_assert!(graph.edge_count() <= 100);
+        }
+    }
 }

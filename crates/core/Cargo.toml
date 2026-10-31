@@ -13,6 +13,7 @@ publish = false
 fixedbitset = { workspace = true }
 foldhash    = { workspace = true, optional = true }
 hashbrown   = { workspace = true, optional = true }
+proptest    = { version = "1.12.0", default-features = false, features = ["no_std", "alloc", "unstable"], optional = true }
 
 [features]
 default   = ["std"]
@@ -21,7 +22,7 @@ alloc     = []
 hashbrown = ["dep:hashbrown"]
 
 # For testing
-test-utils = ["dep:foldhash", "hashbrown", "alloc"]
+test-utils = ["dep:foldhash", "hashbrown", "alloc", "dep:proptest"]
 
 [lints]
 workspace = true

@@ -300,7 +300,7 @@ mod tests {
         test_directed_editable_graph_self_loops, test_directed_graph,
         test_directed_graph_parallel_edges, test_directed_graph_self_loops,
         test_directed_storable_graph, test_directed_storable_graph_parallel_edges,
-        test_directed_storable_graph_self_loops, utils::testing::directed::graph_strategy,
+        test_directed_storable_graph_self_loops, utils::testing::proptest::graph_strategy,
     };
 
     test_directed_graph!(DirectedTestGraph::<(), (), DirNodeId, DirEdgeId>::new,);

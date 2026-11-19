@@ -22,7 +22,8 @@ alloc     = []
 hashbrown = ["dep:hashbrown"]
 
 # For testing
-test-utils = ["dep:foldhash", "hashbrown", "alloc", "dep:proptest"]
+test-utils = ["dep:foldhash", "hashbrown", "alloc"]
+proptest = ["dep:proptest"]
 
 [lints]
 workspace = true

@@ -8,6 +8,8 @@
 /// the user. However, this API may break at any point.
 pub mod directed;
 pub mod editable;
+#[cfg(feature = "proptest")]
+pub mod proptest;
 pub mod storable;
 pub mod undirected;
 

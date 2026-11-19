@@ -11,6 +11,8 @@ pub mod edge;
 pub mod graph;
 pub mod id;
 pub mod node;
+#[cfg(feature = "proptest")]
+pub mod proptest;
 #[cfg(feature = "test-utils")]
 pub mod utils;
 

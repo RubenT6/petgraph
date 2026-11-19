@@ -292,15 +292,13 @@ impl<N, E> EditableGraph for DirectedTestGraph<N, E, DirNodeId, DirEdgeId> {
 
 #[cfg(test)]
 mod tests {
-    use proptest::prelude::*;
-
     use super::*;
     use crate::{
         test_directed_editable_graph, test_directed_editable_graph_parallel_edges,
         test_directed_editable_graph_self_loops, test_directed_graph,
         test_directed_graph_parallel_edges, test_directed_graph_self_loops,
         test_directed_storable_graph, test_directed_storable_graph_parallel_edges,
-        test_directed_storable_graph_self_loops, utils::testing::proptest::graph_strategy,
+        test_directed_storable_graph_self_loops,
     };
 
     test_directed_graph!(DirectedTestGraph::<(), (), DirNodeId, DirEdgeId>::new,);
@@ -322,6 +320,14 @@ mod tests {
     test_directed_storable_graph_parallel_edges!(
         DirectedTestGraph::<(), (), DirNodeId, DirEdgeId>::new,
     );
+}
+
+#[cfg(all(test, feature = "proptest"))]
+mod proptests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::proptest::graph_strategy;
 
     proptest! {
         #[test]

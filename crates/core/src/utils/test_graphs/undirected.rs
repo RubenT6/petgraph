@@ -49,6 +49,7 @@ impl Display for UndirEdgeId {
 
 impl Id for UndirEdgeId {}
 
+#[derive(Debug)]
 pub struct UndirectedTestGraph<N, E, NI = UndirNodeId, EI = UndirEdgeId> {
     next_node: NI,
     next_edge: EI,
@@ -320,4 +321,21 @@ mod tests {
     test_undirected_storable_graph_parallel_edges!(
         UndirectedTestGraph::<(), (), UndirNodeId, UndirEdgeId>::new,
     );
+}
+
+#[cfg(all(test, feature = "proptest"))]
+mod proptests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::proptest::undirected_graph_strategy;
+
+    proptest! {
+        #[test]
+        fn test_directed_graph_properties(graph in undirected_graph_strategy::<UndirectedTestGraph<i32,i32>, i32, i32>(10, 100, UndirectedTestGraph::new)) {
+            prop_assert_eq!(graph.node_count(), graph.nodes().count());
+            prop_assert!(graph.node_count() <= 10);
+            prop_assert!(graph.edge_count() <= 100);
+        }
+    }
 }

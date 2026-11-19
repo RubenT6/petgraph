@@ -327,11 +327,11 @@ mod proptests {
     use proptest::prelude::*;
 
     use super::*;
-    use crate::proptest::graph_strategy;
+    use crate::proptest::directed_graph_strategy;
 
     proptest! {
         #[test]
-        fn test_graph_properties(graph in graph_strategy::<DirectedTestGraph<i32,i32>, i32, i32>(10, 100, DirectedTestGraph::new)) {
+        fn test_directed_graph_properties(graph in directed_graph_strategy::<DirectedTestGraph<i32,i32>, i32, i32>(10, 100, DirectedTestGraph::new)) {
             prop_assert_eq!(graph.node_count(), graph.nodes().count());
             prop_assert!(graph.node_count() <= 10);
             prop_assert!(graph.edge_count() <= 100);

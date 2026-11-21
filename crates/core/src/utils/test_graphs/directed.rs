@@ -324,17 +324,50 @@ mod tests {
 
 #[cfg(all(test, feature = "proptest"))]
 mod proptests {
+    use alloc::vec::Vec;
+
     use proptest::prelude::*;
 
     use super::*;
-    use crate::proptest::directed_graph_strategy;
+    use crate::{
+        proptest::strategies::directed_graph_strategy, proptest_directed_graph,
+        utils::test_graphs::directed::DirectedTestGraph,
+    };
 
     proptest! {
+        // graphs seem to quickly become too complex to shrink in the default number of iterations
+        #![proptest_config(ProptestConfig {
+            max_shrink_iters: 10_000,
+            ..ProptestConfig::default()
+        })]
+
         #[test]
-        fn test_directed_graph_properties(graph in directed_graph_strategy::<DirectedTestGraph<i32,i32>, i32, i32>(10, 100, DirectedTestGraph::new)) {
+        fn test_directed_graph_strategy(
+            graph in directed_graph_strategy::<DirectedTestGraph<i32,i32>, i32, i32>(10, 100, DirectedTestGraph::new)
+        ) {
             prop_assert_eq!(graph.node_count(), graph.nodes().count());
             prop_assert!(graph.node_count() <= 10);
             prop_assert!(graph.edge_count() <= 100);
         }
+
+        #[test]
+        fn test_cardinality(
+            mut graph in directed_graph_strategy::<DirectedTestGraph<i32,i32>, i32, i32>(10, 100, DirectedTestGraph::new),
+            weights in prop::collection::vec(any::<i32>(), 1..10)
+        ) {
+            let initial_order = graph.node_count();
+            let nodes: Vec<DirNodeId> = weights.clone().into_iter().map(|weight| graph.add_node(weight)).collect();
+            prop_assert_eq!(graph.node_count(), initial_order + weights.len());
+            for node in nodes { graph.remove_node(node); }
+            prop_assert_eq!(graph.node_count(), initial_order);
+        }
     }
+
+    proptest_directed_graph!(
+        DirectedTestGraph<i32, i32>,
+        i32,
+        i32,
+        directed_graph_strategy::<DirectedTestGraph<i32, i32>, i32, i32>,
+        DirectedTestGraph::new,
+    );
 }
